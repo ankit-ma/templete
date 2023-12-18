@@ -1,0 +1,50 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+public class CreateDataService {
+
+    // ... (existing code)
+
+    public CreateModelDTO createModelTemplate() {
+
+        // ... (existing code)
+
+        GenralInfoDataDTO generalInfoDataDTO = GenralInfoDataDTO.builder()
+                .type(toMap("Type", typeVal))
+                .development(toMap("Developement_Responsilbity", developval))
+                .design(toMap("Design_Responsibility", desingval))
+                .build();
+
+        Map<String, Map<String, List<String>>> milestonesMap = new LinkedHashMap<>();
+        for (MilestoneMaster m : milestoneMasterList) {
+            List<MilestoneActivityMapping> milestoneActivityMappingOptional = milestoneActivityMappingRepository
+                    .findAllByMilestoneId_MilestoneId(m.getMilestoneId());
+            String milestoneName = m.getMilestoneName();
+            Map<String, List<String>> milestoneData = milestonesMap.computeIfAbsent(milestoneName, k -> new LinkedHashMap<>());
+
+            if (milestoneActivityMappingOptional.isEmpty()) {
+                // Get the existing subtask map or create a new one
+            } else {
+                List<String> subtaskNames = new ArrayList<>();
+                for (MilestoneActivityMapping mp : milestoneActivityMappingOptional) {
+                    subtaskNames.add(mp.getActivityId().getActivityName());
+                }
+                milestoneData.put("subTask", subtaskNames);
+            }
+        }
+        CreateModelDTO createModelDTO = new CreateModelDTO();
+        createModelDTO.setGeneralInfo(generalInfoDataDTO);
+        createModelDTO.setMilestones(milestonesMap);
+
+        return createModelDTO;
+    }
+
+    private Map<String, Object> toMap(String key, List<String> values) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(key, values);
+        return map;
+    }
+}
