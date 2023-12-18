@@ -13,17 +13,17 @@ public class CreateDataService {
         // ... (existing code)
 
         GenralInfoDataDTO generalInfoDataDTO = GenralInfoDataDTO.builder()
-                .type(toMap("Type", typeVal))
-                .development(toMap("Developement_Responsilbity", developval))
-                .design(toMap("Design_Responsibility", desingval))
+                .type(toObject("Type", typeVal))
+                .development(toObject("Developement_Responsilbity", developval))
+                .design(toObject("Design_Responsibility", desingval))
                 .build();
 
-        Map<String, Map<String, List<String>>> milestonesMap = new LinkedHashMap<>();
+        Map<String, Map<String, Object>> milestonesMap = new LinkedHashMap<>();
         for (MilestoneMaster m : milestoneMasterList) {
             List<MilestoneActivityMapping> milestoneActivityMappingOptional = milestoneActivityMappingRepository
                     .findAllByMilestoneId_MilestoneId(m.getMilestoneId());
             String milestoneName = m.getMilestoneName();
-            Map<String, List<String>> milestoneData = milestonesMap.computeIfAbsent(milestoneName, k -> new LinkedHashMap<>());
+            Map<String, Object> milestoneData = milestonesMap.computeIfAbsent(milestoneName, k -> new LinkedHashMap<>());
 
             if (milestoneActivityMappingOptional.isEmpty()) {
                 // Get the existing subtask map or create a new one
@@ -32,7 +32,7 @@ public class CreateDataService {
                 for (MilestoneActivityMapping mp : milestoneActivityMappingOptional) {
                     subtaskNames.add(mp.getActivityId().getActivityName());
                 }
-                milestoneData.put("subTask", subtaskNames);
+                milestoneData.put("subTask", toObject("subTask", subtaskNames));
             }
         }
         CreateModelDTO createModelDTO = new CreateModelDTO();
@@ -42,7 +42,7 @@ public class CreateDataService {
         return createModelDTO;
     }
 
-    private Map<String, Object> toMap(String key, List<String> values) {
+    private Map<String, Object> toObject(String key, List<String> values) {
         Map<String, Object> map = new HashMap<>();
         map.put(key, values);
         return map;
